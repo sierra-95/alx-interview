@@ -1,0 +1,2 @@
+# alx-interview
+Pascals triangle
