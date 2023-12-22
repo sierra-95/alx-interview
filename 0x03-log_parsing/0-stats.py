@@ -1,39 +1,45 @@
-import sys
+#!/usr/bin/python3
+"""
+Reads stdin line by line and computes metrics
+"""
 
-total_size = 0
-status_codes = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
-line_count = 0
+from sys import stdin
 
-try:
-    for line in sys.stdin:
-        # Split the log line by space
-        parts = line.split()
-
-        # Check if the line follows the specified format
-        if len(parts) >= 10:
-            status_code = int(parts[-2])
-            file_size = int(parts[-1])
-
-            # Update total file size
-            total_size += file_size
-
-            # Update status code count
-            if status_code in status_codes:
-                status_codes[status_code] += 1
-
-            line_count += 1
-
-            # Check if 10 lines have been processed
-            if line_count == 10:
-                print(f"File size: {total_size}")
-                for code, count in sorted(status_codes.items()):
-                    if count > 0:
-                        print(f"{code}: {count}")
-                line_count = 0
-
-except KeyboardInterrupt:
-    # If CTRL + C is pressed, print the current stats
-    print(f"File size: {total_size}")
-    for code, count in sorted(status_codes.items()):
-        if count > 0:
-            print(f"{code}: {count}")
+if __name__ == "__main__":
+    total_size = 0
+    status_codes = {}
+    list_status_codes = [
+        "200", "301", "400", "401", "403", "404", "405", "500"]
+    for status in list_status_codes:
+        status_codes[status] = 0
+    count = 0
+    try:
+        for line in stdin:
+            try:
+                args = line.split(" ")
+                if len(args) != 9:
+                    pass
+                if args[-2] in list_status_codes:
+                    status_codes[args[-2]] += 1
+                if args[-1][-1] == '\n':
+                    args[-1][:-1]
+                total_size += int(args[-1])
+            except:
+                pass
+            count += 1
+            if count % 10 == 0:
+                print("File size: {}".format(total_size))
+                for status in sorted(status_codes.keys()):
+                    if status_codes[status] != 0:
+                        print("{}: {}".format(
+                            status, status_codes[status]))
+        print("File size: {}".format(total_size))
+        for status in sorted(status_codes.keys()):
+            if status_codes[status] != 0:
+                print("{}: {}".format(status, status_codes[status]))
+    except KeyboardInterrupt as err:
+        print("File size: {}".format(total_size))
+        for status in sorted(status_codes.keys()):
+            if status_codes[status] != 0:
+                print("{}: {}".format(status, status_codes[status]))
+        raise
