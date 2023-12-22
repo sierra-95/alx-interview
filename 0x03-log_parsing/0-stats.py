@@ -1,39 +1,39 @@
-#!/usr/bin/python3
-"""stats module
-"""
-from sys import stdin
+import sys
 
+total_size = 0
+status_codes = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
+line_count = 0
 
-codes = {'200': 0, '301': 0, '400': 0, '401': 0,
-         '403': 0, '404': 0, '405': 0, '500': 0}
-size = 0
+try:
+    for line in sys.stdin:
+        # Split the log line by space
+        parts = line.split()
 
+        # Check if the line follows the specified format
+        if len(parts) >= 10:
+            status_code = int(parts[-2])
+            file_size = int(parts[-1])
 
-def print_info():
-    """print_info method print needed info
+            # Update total file size
+            total_size += file_size
 
-    Args:
-        codes (dict): code status
-        size (int): size of files
-    """
-    print("File size: {}".format(size))
-    for key, val in sorted(codes.items()):
-        if val > 0:
-            print("{}: {}".format(key, val))
+            # Update status code count
+            if status_code in status_codes:
+                status_codes[status_code] += 1
 
-if __name__ == '__main__':
-    try:
-        for i, line in enumerate(stdin, 1):
-            try:
-                info = line.split()
-                size += int(info[-1])
-                if info[-2] in codes.keys():
-                    codes[info[-2]] += 1
-            except:
-                pass
-            if not i % 10:
-                print_info()
-    except KeyboardInterrupt:
-        print_info()
-        raise
-    print_info()
+            line_count += 1
+
+            # Check if 10 lines have been processed
+            if line_count == 10:
+                print(f"File size: {total_size}")
+                for code, count in sorted(status_codes.items()):
+                    if count > 0:
+                        print(f"{code}: {count}")
+                line_count = 0
+
+except KeyboardInterrupt:
+    # If CTRL + C is pressed, print the current stats
+    print(f"File size: {total_size}")
+    for code, count in sorted(status_codes.items()):
+        if count > 0:
+            print(f"{code}: {count}")
